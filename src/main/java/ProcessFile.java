@@ -51,19 +51,32 @@ public class ProcessFile {
 		//BufferedWriter writer;
 		try {
 			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("Adresy");
+			Sheet sheet = workbook.createSheet("S¹siedzi");
 			Row headerRow = sheet.createRow(0);
+			CellStyle styleHeader = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            font.setFontName("Arial");
+            font.setFontHeightInPoints((short) 11);
+            styleHeader.setFont(font);
+            styleHeader.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            
+            CellStyle styleRest = workbook.createCellStyle();
+            styleRest.setFont(font);
+            
 			String[] columnsNames = {"Zdefinowani", "Imiê i Nazwisko S¹siadów", "Adres", "Kod pocztowy i poczta", "Obrêb", "Nr dzia³ki", "Ark mapy", "KW", "KERG", "NR Roboty" };
             for (int i = 0; i < columnsNames.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columnsNames[i]);
-                CellStyle style = workbook.createCellStyle();
-                Font font = workbook.createFont();
-                font.setBold(true);
-                style.setFont(font);
-                style.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
-                style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                cell.setCellStyle(style);
+                cell.setCellStyle(styleHeader);
+                sheet.autoSizeColumn(i);
+            }
+            
+            Row secondRow = sheet.createRow(1);
+            for (int i = 0; i < columnsNames.length; i++) {
+            	Cell cell = secondRow.createCell(i);
+                cell.setCellValue("HGW "+i);
+                cell.setCellStyle(styleRest);
                 sheet.autoSizeColumn(i);
             }
             
