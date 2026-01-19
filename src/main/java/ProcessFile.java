@@ -72,9 +72,31 @@ public class ProcessFile {
 				fieldData.setFieldNumber(fieldNameList.get(0));
 				fieldData.setFieldId(fieldNameList.get(4));
 				fieldData.setKW(tcolumn.get(tcolumn.size()-1).text());
+				
+				//set obręb and KERG
+				org.jsoup.select.Elements tbodysObreb = doc.select("tbody:contains(Nazwa obrębu)").select("tr");
+				String obrebName="";
+				for(org.jsoup.nodes.Element obrebRow : tbodysObreb) {
+					if(obrebRow.text().contains("Nazwa obrębu")) {
+						System.out.println(obrebRow.text());
+						obrebName=obrebRow.text().split(":")[1];
+					}
+					if(obrebRow.text().contains("Numer obrębu")) {
+						String[] splittedNumber = obrebRow.text().split(":");
+						String fieldObreb = fieldData.getFieldId().split("\\.")[1];
+						if(fieldObreb.equals(splittedNumber[1]));
+						System.out.println("I'm in"+obrebName);
+						fieldData.setObreb(obrebName);
+					}
+				}
+				
+				
 				if(fieldData != null && fieldData.getKW()!= null)
 					listFieldsData.add(fieldData);
 			}
+			
+			
+			
 			
 			Workbook workbook = new XSSFWorkbook();
 			Sheet sheet = workbook.createSheet("Sąsiedzi");
@@ -90,7 +112,7 @@ public class ProcessFile {
             CellStyle styleRest = workbook.createCellStyle();
             styleRest.setFont(font);
             
-			String[] columnsNames = {"Zdefinowani", "Imię i Nazwisko Sąsiadów", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
+			String[] columnsNames = {"Lp", "Imię i Nazwisko Sąsiadów", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
             for (int i = 0; i < columnsNames.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columnsNames[i]);
@@ -99,12 +121,18 @@ public class ProcessFile {
             }
             int rowCount=1;
             for(int j=0; j<listFieldsData.size(); j++) {
+            	Row firstRow = sheet.createRow(rowCount);
+            	Cell cell0 = firstRow.createCell(0);
+            	cell0.setCellValue(j+1);
+            	sheet.autoSizeColumn(0);
             	FieldData currentField = listFieldsData.get(j);
-            	System.out.println("cl:"+currentField);
             	int sizeOwners = currentField.getOwnersList().size();
             	for(int k=0; k<sizeOwners; k++) {
             		Owner currentOwner = currentField.getOwnersList().get(k);
-            		Row nextRow = sheet.createRow(rowCount);
+            		Row nextRow=null;
+            		if(sheet.getRow(rowCount) == null) {
+            			nextRow = sheet.createRow(rowCount);
+            		} else nextRow=firstRow;
             		rowCount++;
             		Cell cell = nextRow.createCell(1);
             		cell.setCellValue(currentOwner.getName());
@@ -115,6 +143,9 @@ public class ProcessFile {
             		Cell cell3 = nextRow.createCell(3);
             		cell3.setCellValue(currentOwner.getAddressPostCode());
             		sheet.autoSizeColumn(3);
+            		Cell cell4 = nextRow.createCell(4);
+            		cell4.setCellValue(currentField.getObreb());
+            		sheet.autoSizeColumn(4);
             		Cell cell5 = nextRow.createCell(5);
             		cell5.setCellValue(currentField.getFieldNumber());
             		sheet.autoSizeColumn(5);
@@ -122,7 +153,6 @@ public class ProcessFile {
             		cell7.setCellValue(currentField.getKW());
             		sheet.autoSizeColumn(7);
             	}
-            	
             }
             
             
@@ -198,7 +228,7 @@ public class ProcessFile {
 						nameMeriage = nameMeriage.substring(1);
 						ownerName += nameMeriage;
 						if(isFirst){
-							ownerName += "i \n        ";
+							ownerName += "i ";
 							String AddressFull = nameList[2];
 							setAddress(AddressFull, owner);
 							isFirst=false;

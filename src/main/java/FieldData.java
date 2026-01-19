@@ -6,8 +6,10 @@ public class FieldData {
 	String FieldId;
 	String FieldNumber;
 	ArrayList<Owner> OwnersList = new ArrayList<Owner>();
-	String KW;	
+	String KW;
+	String Obreb;
 	
+
 
 public FieldData(){
 	count++;
@@ -52,6 +54,14 @@ public String getKW() {
 
 public void setKW(String kW) {
 	this.KW = kW;
+}
+
+public String getObreb() {
+	return Obreb;
+}
+
+public void setObreb(String obreb) {
+	Obreb = obreb;
 }
 
 @Override
