@@ -1,5 +1,7 @@
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.*;
 import java.nio.charset.Charset;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -7,11 +9,13 @@ import javax.swing.JOptionPane;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jsoup.Jsoup;
 
 
 public class ProcessFile {
 	Path loadedFile, tempFile, savingFile;
 	SavingFileProfile saver;
+	ArrayList<FieldData> listFieldsData = new ArrayList<FieldData>();
 	//Path tempFilePath = Paths.get(System.getProperty("user.home")+"\\Desktop");
 	
 	String processLineOfFile(String originalLine) {
@@ -47,11 +51,33 @@ public class ProcessFile {
 	}
 	
 	boolean run() {
+		FieldData fieldData = null;
 		//BufferedReader reader;
 		//BufferedWriter writer;
+		
+		
 		try {
+			org.jsoup.nodes.Document doc = Jsoup.parse(this.loadedFile, null);
+			org.jsoup.select.Elements tbodysOwners = doc.select("tbody:contains(Lp)");
+			org.jsoup.select.Elements tbodysNumbers = doc.select("tbody:contains(Nr dzia≈Çki)");
+			for(int i=0; i<tbodysOwners.size(); i++){
+				fieldData = new FieldData();
+				org.jsoup.select.Elements tRows = tbodysOwners.get(i).select("tr");
+				fieldData.setOwnersList(getNamesAndParticipations(tRows));
+				
+				//get FieldNumber, FieldId and KW
+				org.jsoup.nodes.Element tbody = tbodysNumbers.get(i);
+				org.jsoup.select.Elements tcolumn = tbody.select("tr").get(1).select("td");
+				ArrayList<String> fieldNameList = new ArrayList<String>(Arrays.asList(tcolumn.get(0).text().split(" ")));
+				fieldData.setFieldNumber(fieldNameList.get(0));
+				fieldData.setFieldId(fieldNameList.get(4));
+				fieldData.setKW(tcolumn.get(tcolumn.size()-1).text());
+				if(fieldData != null && fieldData.getKW()!= null)
+					listFieldsData.add(fieldData);
+			}
+			
 			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("Sπsiedzi");
+			Sheet sheet = workbook.createSheet("SƒÖsiedzi");
 			Row headerRow = sheet.createRow(0);
 			CellStyle styleHeader = workbook.createCellStyle();
             Font font = workbook.createFont();
@@ -64,21 +90,41 @@ public class ProcessFile {
             CellStyle styleRest = workbook.createCellStyle();
             styleRest.setFont(font);
             
-			String[] columnsNames = {"Zdefinowani", "ImiÍ i Nazwisko SπsiadÛw", "Adres", "Kod pocztowy i poczta", "ObrÍb", "Nr dzia≥ki", "Ark mapy", "KW", "KERG", "NR Roboty" };
+			String[] columnsNames = {"Zdefinowani", "Imiƒô i Nazwisko SƒÖsiad√≥w", "Adres", "Kod pocztowy i poczta", "Obrƒôb", "Nr dzia≈Çki", "Ark mapy", "KW", "KERG", "NR Roboty" };
             for (int i = 0; i < columnsNames.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columnsNames[i]);
                 cell.setCellStyle(styleHeader);
                 sheet.autoSizeColumn(i);
             }
-            
-            Row secondRow = sheet.createRow(1);
-            for (int i = 0; i < columnsNames.length; i++) {
-            	Cell cell = secondRow.createCell(i);
-                cell.setCellValue("HGW "+i);
-                cell.setCellStyle(styleRest);
-                sheet.autoSizeColumn(i);
+            int rowCount=1;
+            for(int j=0; j<listFieldsData.size(); j++) {
+            	FieldData currentField = listFieldsData.get(j);
+            	System.out.println("cl:"+currentField);
+            	int sizeOwners = currentField.getOwnersList().size();
+            	for(int k=0; k<sizeOwners; k++) {
+            		Owner currentOwner = currentField.getOwnersList().get(k);
+            		Row nextRow = sheet.createRow(rowCount);
+            		rowCount++;
+            		Cell cell = nextRow.createCell(1);
+            		cell.setCellValue(currentOwner.getName());
+            		sheet.autoSizeColumn(1);
+            		Cell cell2 = nextRow.createCell(2);
+            		cell2.setCellValue(currentOwner.getAddressStreet());
+            		sheet.autoSizeColumn(2);
+            		Cell cell3 = nextRow.createCell(3);
+            		cell3.setCellValue(currentOwner.getAddressPostCode());
+            		sheet.autoSizeColumn(3);
+            		Cell cell5 = nextRow.createCell(5);
+            		cell5.setCellValue(currentField.getFieldNumber());
+            		sheet.autoSizeColumn(5);
+            		Cell cell7 = nextRow.createCell(7);
+            		cell7.setCellValue(currentField.getKW());
+            		sheet.autoSizeColumn(7);
+            	}
+            	
             }
+            
             
 			
             /*
@@ -120,9 +166,118 @@ public class ProcessFile {
 	
 	void displayErrorFrame(String errorMessege) {
 		JOptionPane.showMessageDialog(null,
-				"Wystπpi≥ b≥ad: \r\n"+errorMessege,
-		        "Wystπpi≥ b≥πd",
+				"WystƒÖpi≈Ç b≈ÇƒÖd: \r\n"+errorMessege,
+		        "WystƒÖpi≈Ç b≈ÇƒÖd",
 		        JOptionPane.ERROR_MESSAGE);
+	}
+	
+	ArrayList<Owner> getNamesAndParticipations(org.jsoup.select.Elements tRows){
+		ArrayList<Owner> ownersAndSharesList = new ArrayList<Owner>();
+		Owner owner = null;
+		String ownerName = null;
+		for(int i=1; i<tRows.size(); i++){
+			org.jsoup.select.Elements tColumns = tRows.get(i).select("td");
+			org.jsoup.nodes.Element tName = tColumns.get(1);
+			
+			owner = new Owner();
+			ownerName = "";
+			String ownershipType = tColumns.get(2).text();
+			String participation = tColumns.get(3).text();
+			String longName = tName.toString();
+			longName = longName.substring(4);
+			String[] nameList = longName.split("<br>");
+			
+			// get marriage names
+			if(nameList[0].contains("ma≈Ç≈ºe≈Ñstwo")) {
+				ownerName +="MA≈Å≈ª.";
+				boolean isFirst = true;
+				for(int j=0; j<nameList.length; j++){
+					String line = nameList[j];
+					if(line.contains("Rodzice")){
+						String nameMeriage = getNameIndyvidual(line);
+						nameMeriage = nameMeriage.substring(1);
+						ownerName += nameMeriage;
+						if(isFirst){
+							ownerName += "i \n        ";
+							String AddressFull = nameList[2];
+							setAddress(AddressFull, owner);
+							isFirst=false;
+						}
+						else {
+							String AddressFull = nameList[j+1];
+							setAddress2(AddressFull, owner);
+						}
+					}
+				}
+				
+			}
+			
+			// get individual person name
+			if(nameList[0].contains("Rodzice")){
+				ownerName += getNameIndyvidual(nameList[0]);
+				setAddress(nameList[1], owner);
+			} else
+				// get institutions names
+				if(! nameList[0].contains("ma≈Ç≈ºe≈Ñstwo")) {
+					
+					
+					String nameInstitution = "";
+					if(nameList[0].contains("</td>")) {
+						nameInstitution = nameList[0].split("</td>")[0].toString();
+					} else {
+						nameInstitution = nameList[0].split("\n")[0].toString();
+					}
+					ownerName = nameInstitution;
+					
+					//set institutions address
+					org.jsoup.select.Elements NameAndAdress = tName.select("td");
+					String[] splittedColumn = NameAndAdress.toString().split("<br>\n");
+					if(splittedColumn.length>2 && splittedColumn[1]!=null){
+						if(owner.getAddressStreet()==null)
+							setAddress(splittedColumn[1], owner);
+					} else {
+						if(splittedColumn.length>1 && splittedColumn[1]!=null){
+							setAddress2(splittedColumn[1], owner);
+						}
+					}
+				} 
+				
+			owner.setName(ownerName);
+			owner.setOwnershipType(ownershipType);
+			owner.setParticipation(participation);
+			ownersAndSharesList.add(owner);
+			System.out.println(owner);
+		}
+		
+		return ownersAndSharesList;
+	}
+	
+	String getNameIndyvidual (String input){
+		String name = null;
+		name = input.split("Rodzice")[0];
+		return name;
+	}
+	
+	boolean setAddress(String fullAddress, Owner owner){
+		String withoutTD = fullAddress.split("</td>")[0];
+		String[] splitAddress= withoutTD.split(";");
+		if(splitAddress[0]!=null){
+			owner.setAddressStreet(splitAddress[0]);
+			if(splitAddress.length>1 && splitAddress[1]!=null)
+				owner.setAddressPostCode(splitAddress[1]);
+			return true;
+		} else return false;
+	}
+	
+	boolean setAddress2(String fullAddress, Owner owner){
+		String withoutTD = fullAddress.split("</td>")[0];
+		String[] splitAddress= withoutTD.split(";");
+		if(splitAddress[0]!=null){
+			owner.setAddress2St(splitAddress[0]);
+			if(splitAddress.length>1 && splitAddress[1]!=null)
+				owner.setAddress2Code(splitAddress[1]);
+			return true;
+		} else return false;
 	}
 	
 }
