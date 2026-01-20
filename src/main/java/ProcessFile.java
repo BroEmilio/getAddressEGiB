@@ -17,34 +17,7 @@ public class ProcessFile {
 	SavingFileProfile saver;
 	ArrayList<FieldData> listFieldsData = new ArrayList<FieldData>();
 	//Path tempFilePath = Paths.get(System.getProperty("user.home")+"\\Desktop");
-	
-	String processLineOfFile(String originalLine) {
-		
-		// here implement own algorithm for processing one line of file
-        String[] splitLine = originalLine.split("\\s+");
-        String pointNumber = splitLine[1];
-        
-        Pattern pointsPrefixPattern = Pattern.compile("\\d{3}\\.\\d{3}-"); //erase prefix (example 223.112-)
-        Matcher matcher = pointsPrefixPattern.matcher(pointNumber);
-        String noPrefixNumber = matcher.replaceAll("").toString();
-        
-        Pattern minusOnePattern = Pattern.compile("-1$");
-        matcher = minusOnePattern.matcher(noPrefixNumber);
-        String withoutMinusOne = matcher.replaceAll("");
-        
-        
-        Pattern slashPattern = Pattern.compile("-1\\/");	//replace -1/ by -
-        matcher = slashPattern.matcher(withoutMinusOne);
-        String finalNumber = matcher.replaceAll("-");
-        
-        String newLine = "";
-        for(int splitIndex=1; splitIndex<splitLine.length; splitIndex++)
-        	newLine = newLine+splitLine[splitIndex]+" ";
-        
-        newLine += finalNumber+"\r\n";
-        
-		return newLine;
-	}
+
 	
 	public ProcessFile(Path file) {
 		this.loadedFile = file;
@@ -76,11 +49,17 @@ public class ProcessFile {
 				fieldData.setFieldNumber(fieldNameList.get(0));
 				fieldData.setFieldId(fieldNameList.get(4));
 				fieldData.setKW(tcolumn.get(tcolumn.size()-1).text());
-				fieldData.setObreb(getObreb(tbodysObreb, fieldData));
 				if(fieldData != null && fieldData.getKW()!= null)
 					listFieldsData.add(fieldData);
 			}
 			
+			for(int i=0; i<listFieldsData.size(); i++) {
+				if(listFieldsData.size()==tbodysObreb.size()) {
+					fieldData = listFieldsData.get(i);
+					org.jsoup.nodes.Element tbodyObreb = tbodysObreb.get(i);
+					fieldData.setObreb(getObreb(tbodyObreb, fieldData));
+				}
+			}
 			
 			
 			
@@ -121,10 +100,38 @@ public class ProcessFile {
             		rowCount++;
             		Cell cell = nextRow.createCell(1);
             		cell.setCellValue(currentOwner.getName());
-            		Cell cell2 = nextRow.createCell(2);
-            		cell2.setCellValue(currentOwner.getAddressStreet());
-            		Cell cell3 = nextRow.createCell(3);
-            		cell3.setCellValue(currentOwner.getAddressPostCode());
+            		if(currentOwner.getAddress2St() == null) { //if second Address is empty
+	            		Cell cell2 = nextRow.createCell(2);
+	            		cell2.setCellValue(currentOwner.getAddressStreet());
+	            		Cell cell3 = nextRow.createCell(3);
+	            		cell3.setCellValue(currentOwner.getAddressPostCode());
+            		} else { //if has second Address
+            			if(currentOwner.getAddress2St().equals(currentOwner.getAddressStreet())) { // if Addresses are the same
+            				Cell cell2 = nextRow.createCell(2);
+    	            		cell2.setCellValue(currentOwner.getAddress2St());
+    	            		Cell cell3 = nextRow.createCell(3);
+    	            		cell3.setCellValue(currentOwner.getAddress2Code());
+            			} else { // if addresses are different
+            				if(currentOwner.getAddressStreet()==null && currentOwner.getAddress2St()!=null) {
+            					Cell cell2 = nextRow.createCell(2);
+        	            		cell2.setCellValue(currentOwner.getAddress2St());
+        	            		Cell cell3 = nextRow.createCell(3);
+        	            		cell3.setCellValue(currentOwner.getAddress2Code());
+            				} else {
+            					Cell cell2 = nextRow.createCell(2);
+        	            		cell2.setCellValue(currentOwner.getAddressStreet());
+        	            		Cell cell3 = nextRow.createCell(3);
+        	            		cell3.setCellValue(currentOwner.getAddressPostCode());
+            					Row addedRow = sheet.createRow(rowCount);
+            					rowCount++;
+            					Cell cell2a = addedRow.createCell(2);
+        	            		cell2a.setCellValue(currentOwner.getAddress2St());
+        	            		Cell cell3a = addedRow.createCell(3);
+        	            		cell3a.setCellValue(currentOwner.getAddress2Code());
+            				}
+            			}
+            			
+            		}
             		Cell cell4 = nextRow.createCell(4);
             		cell4.setCellValue(currentField.getObreb());
             		Cell cell5 = nextRow.createCell(5);
@@ -294,25 +301,22 @@ public class ProcessFile {
 		} else return false;
 	}
 	
-	String getObreb(org.jsoup.select.Elements tbodysObreb, FieldData fieldData) {
+	String getObreb(org.jsoup.nodes.Element tbodyObreb, FieldData fieldData) {
 		String obrebName="";
-		for(int i=0; i<tbodysObreb.size(); i++ ) {
-			for(org.jsoup.nodes.Element obrebRow : tbodysObreb.get(i).select("tr") ) {
+		org.jsoup.select.Elements rowsObreb= tbodyObreb.select("tr");
+			for(org.jsoup.nodes.Element obrebRow : rowsObreb ) {
 				if(obrebRow.text().contains("Nazwa obrębu")) {
-					System.out.println(obrebRow.text());
 					obrebName=obrebRow.text().split(":")[1];
 				}
 				if(obrebRow.text().contains("Numer obrębu")) {
 					String[] splittedNumber = obrebRow.text().split(":");
 					String fieldObreb = fieldData.getFieldId().split("\\.")[1];
-					if(fieldObreb==splittedNumber[1]);{
-						System.out.println("I'm in"+splittedNumber[1]+" obreb:"+fieldObreb + obrebName);
+					if(fieldObreb.equals(splittedNumber[1]));{
 						return obrebName;
 					}
 					
 				}
 			}
-		}
 		return "";
 	}
 	
