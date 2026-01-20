@@ -2,9 +2,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.regex.*;
-import java.nio.charset.Charset;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import javax.swing.JOptionPane;
 
 import org.apache.poi.ss.usermodel.*;
@@ -16,8 +13,6 @@ public class ProcessFile {
 	Path loadedFile, tempFile, savingFile;
 	SavingFileProfile saver;
 	ArrayList<FieldData> listFieldsData = new ArrayList<FieldData>();
-	//Path tempFilePath = Paths.get(System.getProperty("user.home")+"\\Desktop");
-
 	
 	public ProcessFile(Path file) {
 		this.loadedFile = file;
@@ -26,9 +21,6 @@ public class ProcessFile {
 	boolean run() {
 		FieldData fieldData = null;
 		String KERG ="";
-		//BufferedReader reader;
-		//BufferedWriter writer;
-		
 		
 		try {
 			org.jsoup.nodes.Document doc = Jsoup.parse(this.loadedFile, null);
@@ -60,8 +52,6 @@ public class ProcessFile {
 					fieldData.setObreb(getObreb(tbodyObreb, fieldData));
 				}
 			}
-			
-			
 			
 			Workbook workbook = new XSSFWorkbook();
 			Sheet sheet = workbook.createSheet("Sąsiedzi");
@@ -146,28 +136,10 @@ public class ProcessFile {
             	sheet.autoSizeColumn(j);
             }
             
-            
-			
-            /*
-			reader = Files.newBufferedReader(loadedFile, Charset.defaultCharset());
-			tempFile = Files.createTempFile("tempProcessFile", ".txt");
-			writer = Files.newBufferedWriter(tempFile, Charset.defaultCharset());
-			String currentLine=null;
-			while((currentLine = reader.readLine()) != null) {
-				String newLine = processLineOfFile(currentLine);
-				writer.write(newLine);
-				writer.flush();
-				
-			}
-			*/
 			saver = new SavingFileProfile();
 			saver.setNameLoadedFile(loadedFile.getFileName().toString());
 			saver.setSavingFileProfile();
 			savingFile = saver.getPath();
-			//Files.copy(tempFile.toAbsolutePath(), savingFile, REPLACE_EXISTING);
-			//Files.delete(tempFile);
-			
-			
 			File saveFile = savingFile.toFile();
 			FileOutputStream fileOut = new FileOutputStream(saveFile);
             workbook.write(fileOut);

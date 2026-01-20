@@ -24,7 +24,7 @@ public class SavingFileProfile {
     	chooser.setDialogTitle("Zapisz plik jako");
     	chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     	chooser.setAcceptAllFileFilterUsed(false);
-    	chooser.setSelectedFile(new File("Adresy - "+nameSavingFile));
+    	chooser.setSelectedFile(new File("Adresy"+nameSavingFile));
     	chooser.showSaveDialog(null);
     	savingFile = chooser.getSelectedFile().toPath();
     	
@@ -36,8 +36,8 @@ public class SavingFileProfile {
 	}
 	
 	public void setNameLoadedFile(String nameLoadedFile) {
-		String rawName = nameLoadedFile.substring(0, nameLoadedFile.lastIndexOf("."));
-		this.nameSavingFile = rawName+"."+extensionForFile;
+		//String rawName = nameLoadedFile.substring(0, nameLoadedFile.lastIndexOf("."));
+		this.nameSavingFile = "."+extensionForFile;
 	}
 	
 }

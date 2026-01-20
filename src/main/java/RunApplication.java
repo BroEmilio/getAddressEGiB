@@ -75,7 +75,7 @@ public class RunApplication extends JFrame {
 		frameLabel.setEditable(false);
 		frameLabel.setFont(new Font("Arial Black", Font.BOLD | Font.ITALIC, 14));
 		frameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		frameLabel.setText("Wybierz plik");
+		frameLabel.setText("Wybierz plik htm/html z danymi EGiB (geoportal2)");
 		frameLabel.setColumns(10);
 		frameLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 		frameLabel.setBackground(new Color(0, 0, 0, 0));
