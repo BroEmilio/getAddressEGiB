@@ -52,14 +52,18 @@ public class ProcessFile {
 	
 	boolean run() {
 		FieldData fieldData = null;
+		String KERG ="";
 		//BufferedReader reader;
 		//BufferedWriter writer;
 		
 		
 		try {
 			org.jsoup.nodes.Document doc = Jsoup.parse(this.loadedFile, null);
+			org.jsoup.nodes.Element paragraphKERG = doc.select("p[align=center]").get(0);
 			org.jsoup.select.Elements tbodysOwners = doc.select("tbody:contains(Lp)");
 			org.jsoup.select.Elements tbodysNumbers = doc.select("tbody:contains(Nr działki)");
+			org.jsoup.select.Elements tbodysObreb = doc.select("tbody:contains(Nazwa obrębu)");
+			KERG = paragraphKERG.text().split(":")[1];
 			for(int i=0; i<tbodysOwners.size(); i++){
 				fieldData = new FieldData();
 				org.jsoup.select.Elements tRows = tbodysOwners.get(i).select("tr");
@@ -72,25 +76,7 @@ public class ProcessFile {
 				fieldData.setFieldNumber(fieldNameList.get(0));
 				fieldData.setFieldId(fieldNameList.get(4));
 				fieldData.setKW(tcolumn.get(tcolumn.size()-1).text());
-				
-				//set obręb and KERG
-				org.jsoup.select.Elements tbodysObreb = doc.select("tbody:contains(Nazwa obrębu)").select("tr");
-				String obrebName="";
-				for(org.jsoup.nodes.Element obrebRow : tbodysObreb) {
-					if(obrebRow.text().contains("Nazwa obrębu")) {
-						System.out.println(obrebRow.text());
-						obrebName=obrebRow.text().split(":")[1];
-					}
-					if(obrebRow.text().contains("Numer obrębu")) {
-						String[] splittedNumber = obrebRow.text().split(":");
-						String fieldObreb = fieldData.getFieldId().split("\\.")[1];
-						if(fieldObreb.equals(splittedNumber[1]));
-						System.out.println("I'm in"+obrebName);
-						fieldData.setObreb(obrebName);
-					}
-				}
-				
-				
+				fieldData.setObreb(getObreb(tbodysObreb, fieldData));
 				if(fieldData != null && fieldData.getKW()!= null)
 					listFieldsData.add(fieldData);
 			}
@@ -124,7 +110,6 @@ public class ProcessFile {
             	Row firstRow = sheet.createRow(rowCount);
             	Cell cell0 = firstRow.createCell(0);
             	cell0.setCellValue(j+1);
-            	sheet.autoSizeColumn(0);
             	FieldData currentField = listFieldsData.get(j);
             	int sizeOwners = currentField.getOwnersList().size();
             	for(int k=0; k<sizeOwners; k++) {
@@ -136,23 +121,22 @@ public class ProcessFile {
             		rowCount++;
             		Cell cell = nextRow.createCell(1);
             		cell.setCellValue(currentOwner.getName());
-            		sheet.autoSizeColumn(1);
             		Cell cell2 = nextRow.createCell(2);
             		cell2.setCellValue(currentOwner.getAddressStreet());
-            		sheet.autoSizeColumn(2);
             		Cell cell3 = nextRow.createCell(3);
             		cell3.setCellValue(currentOwner.getAddressPostCode());
-            		sheet.autoSizeColumn(3);
             		Cell cell4 = nextRow.createCell(4);
             		cell4.setCellValue(currentField.getObreb());
-            		sheet.autoSizeColumn(4);
             		Cell cell5 = nextRow.createCell(5);
             		cell5.setCellValue(currentField.getFieldNumber());
-            		sheet.autoSizeColumn(5);
             		Cell cell7 = nextRow.createCell(7);
             		cell7.setCellValue(currentField.getKW());
-            		sheet.autoSizeColumn(7);
+            		Cell cell8 = nextRow.createCell(8);
+            		cell8.setCellValue(KERG);
             	}
+            }
+            for(int j=0; j<9; j++) {
+            	sheet.autoSizeColumn(j);
             }
             
             
@@ -308,6 +292,28 @@ public class ProcessFile {
 				owner.setAddress2Code(splitAddress[1]);
 			return true;
 		} else return false;
+	}
+	
+	String getObreb(org.jsoup.select.Elements tbodysObreb, FieldData fieldData) {
+		String obrebName="";
+		for(int i=0; i<tbodysObreb.size(); i++ ) {
+			for(org.jsoup.nodes.Element obrebRow : tbodysObreb.get(i).select("tr") ) {
+				if(obrebRow.text().contains("Nazwa obrębu")) {
+					System.out.println(obrebRow.text());
+					obrebName=obrebRow.text().split(":")[1];
+				}
+				if(obrebRow.text().contains("Numer obrębu")) {
+					String[] splittedNumber = obrebRow.text().split(":");
+					String fieldObreb = fieldData.getFieldId().split("\\.")[1];
+					if(fieldObreb==splittedNumber[1]);{
+						System.out.println("I'm in"+splittedNumber[1]+" obreb:"+fieldObreb + obrebName);
+						return obrebName;
+					}
+					
+				}
+			}
+		}
+		return "";
 	}
 	
 }
