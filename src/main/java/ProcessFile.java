@@ -13,6 +13,7 @@ public class ProcessFile {
 	Path loadedFile, tempFile, savingFile;
 	SavingFileProfile saver;
 	ArrayList<FieldData> listFieldsData = new ArrayList<FieldData>();
+	String KERG ="";
 	
 	public ProcessFile(Path file) {
 		this.loadedFile = file;
@@ -20,8 +21,6 @@ public class ProcessFile {
 	
 	boolean run() {
 		FieldData fieldData = null;
-		String KERG ="";
-		
 		try {
 			org.jsoup.nodes.Document doc = Jsoup.parse(this.loadedFile, null);
 			org.jsoup.nodes.Element paragraphKERG = doc.select("p[align=center]").get(0);
@@ -53,97 +52,7 @@ public class ProcessFile {
 				}
 			}
 			
-			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("Sąsiedzi");
-			Row headerRow = sheet.createRow(0);
-			CellStyle styleHeader = workbook.createCellStyle();
-            Font font = workbook.createFont();
-            font.setFontName("Arial");
-            font.setFontHeightInPoints((short) 11);
-            styleHeader.setFont(font);
-            styleHeader.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            
-            CellStyle styleRest = workbook.createCellStyle();
-            styleRest.setFont(font);
-            
-			String[] columnsNames = {"Lp", "Imię i Nazwisko Sąsiadów", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
-            for (int i = 0; i < columnsNames.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(columnsNames[i]);
-                cell.setCellStyle(styleHeader);
-                sheet.autoSizeColumn(i);
-            }
-            int rowCount=1;
-            for(int j=0; j<listFieldsData.size(); j++) {
-            	Row firstRow = sheet.createRow(rowCount);
-            	Cell cell0 = firstRow.createCell(0);
-            	cell0.setCellValue(j+1);
-            	FieldData currentField = listFieldsData.get(j);
-            	int sizeOwners = currentField.getOwnersList().size();
-            	for(int k=0; k<sizeOwners; k++) {
-            		Owner currentOwner = currentField.getOwnersList().get(k);
-            		Row nextRow=null;
-            		if(sheet.getRow(rowCount) == null) {
-            			nextRow = sheet.createRow(rowCount);
-            		} else nextRow=firstRow;
-            		rowCount++;
-            		Cell cell = nextRow.createCell(1);
-            		cell.setCellValue(currentOwner.getName());
-            		if(currentOwner.getAddress2St() == null) { //if second Address is empty
-	            		Cell cell2 = nextRow.createCell(2);
-	            		cell2.setCellValue(currentOwner.getAddressStreet());
-	            		Cell cell3 = nextRow.createCell(3);
-	            		cell3.setCellValue(currentOwner.getAddressPostCode());
-            		} else { //if has second Address
-            			if(currentOwner.getAddress2St().equals(currentOwner.getAddressStreet())) { // if Addresses are the same
-            				Cell cell2 = nextRow.createCell(2);
-    	            		cell2.setCellValue(currentOwner.getAddress2St());
-    	            		Cell cell3 = nextRow.createCell(3);
-    	            		cell3.setCellValue(currentOwner.getAddress2Code());
-            			} else { // if addresses are different
-            				if(currentOwner.getAddressStreet()==null && currentOwner.getAddress2St()!=null) {
-            					Cell cell2 = nextRow.createCell(2);
-        	            		cell2.setCellValue(currentOwner.getAddress2St());
-        	            		Cell cell3 = nextRow.createCell(3);
-        	            		cell3.setCellValue(currentOwner.getAddress2Code());
-            				} else {
-            					Cell cell2 = nextRow.createCell(2);
-        	            		cell2.setCellValue(currentOwner.getAddressStreet());
-        	            		Cell cell3 = nextRow.createCell(3);
-        	            		cell3.setCellValue(currentOwner.getAddressPostCode());
-            					Row addedRow = sheet.createRow(rowCount);
-            					rowCount++;
-            					Cell cell2a = addedRow.createCell(2);
-        	            		cell2a.setCellValue(currentOwner.getAddress2St());
-        	            		Cell cell3a = addedRow.createCell(3);
-        	            		cell3a.setCellValue(currentOwner.getAddress2Code());
-            				}
-            			}
-            			
-            		}
-            		Cell cell4 = nextRow.createCell(4);
-            		cell4.setCellValue(currentField.getObreb());
-            		Cell cell5 = nextRow.createCell(5);
-            		cell5.setCellValue(currentField.getFieldNumber());
-            		Cell cell7 = nextRow.createCell(7);
-            		cell7.setCellValue(currentField.getKW());
-            		Cell cell8 = nextRow.createCell(8);
-            		cell8.setCellValue(KERG);
-            	}
-            }
-            for(int j=0; j<9; j++) {
-            	sheet.autoSizeColumn(j);
-            }
-            
-			saver = new SavingFileProfile();
-			saver.setNameLoadedFile(loadedFile.getFileName().toString());
-			saver.setSavingFileProfile();
-			savingFile = saver.getPath();
-			File saveFile = savingFile.toFile();
-			FileOutputStream fileOut = new FileOutputStream(saveFile);
-            workbook.write(fileOut);
-            workbook.close();
+			
 			
 		} catch (FileNotFoundException e) {
 			displayErrorFrame(e.toString());
@@ -290,6 +199,110 @@ public class ProcessFile {
 				}
 			}
 		return "";
+	}
+	
+	boolean exportToXLSX(ArrayList<FieldData> selectedFieldsData) {
+		try {
+			Workbook workbook = new XSSFWorkbook();
+			Sheet sheet = workbook.createSheet("Sąsiedzi");
+			Row headerRow = sheet.createRow(0);
+			CellStyle styleHeader = workbook.createCellStyle();
+	        Font font = workbook.createFont();
+	        font.setFontName("Arial");
+	        font.setFontHeightInPoints((short) 11);
+	        styleHeader.setFont(font);
+	        styleHeader.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+	        styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+	        
+	        CellStyle styleRest = workbook.createCellStyle();
+	        styleRest.setFont(font);
+	        
+			String[] columnsNames = {"Lp", "Imię i Nazwisko Sąsiadów", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
+	        for (int i = 0; i < columnsNames.length; i++) {
+	            Cell cell = headerRow.createCell(i);
+	            cell.setCellValue(columnsNames[i]);
+	            cell.setCellStyle(styleHeader);
+	            sheet.autoSizeColumn(i);
+	        }
+	        int rowCount=1;
+	        for(int j=0; j<selectedFieldsData.size(); j++) {
+	        	Row firstRow = sheet.createRow(rowCount);
+	        	Cell cell0 = firstRow.createCell(0);
+	        	cell0.setCellValue(j+1);
+	        	FieldData currentField = selectedFieldsData.get(j);
+	        	int sizeOwners = currentField.getOwnersList().size();
+	        	for(int k=0; k<sizeOwners; k++) {
+	        		Owner currentOwner = currentField.getOwnersList().get(k);
+	        		Row nextRow=null;
+	        		if(sheet.getRow(rowCount) == null) {
+	        			nextRow = sheet.createRow(rowCount);
+	        		} else nextRow=firstRow;
+	        		rowCount++;
+	        		Cell cell = nextRow.createCell(1);
+	        		cell.setCellValue(currentOwner.getName());
+	        		if(currentOwner.getAddress2St() == null) { //if second Address is empty
+	            		Cell cell2 = nextRow.createCell(2);
+	            		cell2.setCellValue(currentOwner.getAddressStreet());
+	            		Cell cell3 = nextRow.createCell(3);
+	            		cell3.setCellValue(currentOwner.getAddressPostCode());
+	        		} else { //if has second Address
+	        			if(currentOwner.getAddress2St().equals(currentOwner.getAddressStreet())) { // if Addresses are the same
+	        				Cell cell2 = nextRow.createCell(2);
+		            		cell2.setCellValue(currentOwner.getAddress2St());
+		            		Cell cell3 = nextRow.createCell(3);
+		            		cell3.setCellValue(currentOwner.getAddress2Code());
+	        			} else { // if addresses are different
+	        				if(currentOwner.getAddressStreet()==null && currentOwner.getAddress2St()!=null) {
+	        					Cell cell2 = nextRow.createCell(2);
+	    	            		cell2.setCellValue(currentOwner.getAddress2St());
+	    	            		Cell cell3 = nextRow.createCell(3);
+	    	            		cell3.setCellValue(currentOwner.getAddress2Code());
+	        				} else {
+	        					Cell cell2 = nextRow.createCell(2);
+	    	            		cell2.setCellValue(currentOwner.getAddressStreet());
+	    	            		Cell cell3 = nextRow.createCell(3);
+	    	            		cell3.setCellValue(currentOwner.getAddressPostCode());
+	        					Row addedRow = sheet.createRow(rowCount);
+	        					rowCount++;
+	        					Cell cell2a = addedRow.createCell(2);
+	    	            		cell2a.setCellValue(currentOwner.getAddress2St());
+	    	            		Cell cell3a = addedRow.createCell(3);
+	    	            		cell3a.setCellValue(currentOwner.getAddress2Code());
+	        				}
+	        			}
+	        			
+	        		}
+	        		Cell cell4 = nextRow.createCell(4);
+	        		cell4.setCellValue(currentField.getObreb());
+	        		Cell cell5 = nextRow.createCell(5);
+	        		cell5.setCellValue(currentField.getFieldNumber());
+	        		Cell cell7 = nextRow.createCell(7);
+	        		cell7.setCellValue(currentField.getKW());
+	        		Cell cell8 = nextRow.createCell(8);
+	        		cell8.setCellValue(KERG);
+	        	}
+	        }
+	        for(int j=0; j<9; j++) {
+	        	sheet.autoSizeColumn(j);
+	        }
+			saver = new SavingFileProfile();
+			saver.setNameLoadedFile(loadedFile.getFileName().toString());
+			saver.setSavingFileProfile();
+			savingFile = saver.getPath();
+			File saveFile = savingFile.toFile();
+			FileOutputStream fileOut = new FileOutputStream(saveFile);
+	        workbook.write(fileOut);
+	        workbook.close();
+		} catch (FileNotFoundException e) {
+			displayErrorFrame(e.toString());
+			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			displayErrorFrame(e.toString());
+			e.printStackTrace();
+			return false;
+		} 
+	return true;
 	}
 	
 }
