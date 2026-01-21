@@ -1,8 +1,11 @@
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -19,6 +22,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -29,16 +34,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class GUI extends JFrame{
 	private static final long serialVersionUID = 1L;
@@ -110,7 +114,7 @@ public class GUI extends JFrame{
     	});
 		
 		JMenuItem infoItem = new JMenuItem("Instrukcja obs�ugi");
-		final String info = "1. Wy�wietl dane opisowe EGiB w geoportalu (tak �eby by�o wida� w�a�cicieli, numery KW, itp)\n"+
+		final String info = "1. Wyświetl dane opisowe EGiB w geoportalu (tak �eby by�o wida� w�a�cicieli, numery KW, itp)\n"+
 					  "2. Naci�nij prawy przycisk i wybierz Zapisz stron� lub co� podobnego (w zale�no�ci od przegl�darki)\n"+
 					  "3. Zapisan� stron� wczytaj w programie\n"+
 					  "4. Podw�jne klikni�cie w numer dzia�ki skopiuje wybrane dane w�a�cicieli do schowka\n\n\n"+
@@ -171,18 +175,14 @@ public class GUI extends JFrame{
 				if(fileProcessing!=null) {
 					DefaultListModel<ListItem> model = listModel;
 					if(model.get(0).isSelected()) { //uncheck all
-						System.out.println("I'm in 1");
 						for(int i=0;i<model.getSize();i++) {
 							ListItem item = model.get(i);
 							item.setSelected(false);
-							System.out.println("1:"+item.toString());
 						}
 					} else { // select all
-						System.out.println("I'm in 2");
 						for(int i=0;i<model.getSize();i++) {
 							ListItem item = model.get(i);
 							item.setSelected(true);
-							System.out.println("2:"+item.toString());
 						}
 					}
 					frame.repaint();
@@ -370,8 +370,9 @@ public class GUI extends JFrame{
 	}
 	
 	class RightCheckBoxRenderer extends JCheckBox implements ListCellRenderer<ListItem> {
-	    
-	    public RightCheckBoxRenderer() {
+		private static final long serialVersionUID = 1L;
+
+		public RightCheckBoxRenderer() {
 	        setHorizontalTextPosition(SwingConstants.LEADING);
 	        setHorizontalAlignment(SwingConstants.LEFT); 
 	    }

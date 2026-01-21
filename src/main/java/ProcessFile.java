@@ -100,7 +100,7 @@ public class ProcessFile {
 						nameMeriage = nameMeriage.substring(1);
 						ownerName += nameMeriage;
 						if(isFirst){
-							ownerName += "i ";
+							ownerName += "i \n   ";
 							String AddressFull = nameList[2];
 							setAddress(AddressFull, owner);
 							isFirst=false;
@@ -204,7 +204,7 @@ public class ProcessFile {
 	boolean exportToXLSX(ArrayList<FieldData> selectedFieldsData) {
 		try {
 			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("Sąsiedzi");
+			Sheet sheet = workbook.createSheet("Właściciele");
 			Row headerRow = sheet.createRow(0);
 			CellStyle styleHeader = workbook.createCellStyle();
 	        Font font = workbook.createFont();
@@ -215,9 +215,12 @@ public class ProcessFile {
 	        styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 	        
 	        CellStyle styleRest = workbook.createCellStyle();
-	        styleRest.setFont(font);
+	        Font fontRest = workbook.createFont();
+	        fontRest.setFontName("Arial");
+	        fontRest.setFontHeightInPoints((short) 9);
+	        styleRest.setFont(fontRest);
 	        
-			String[] columnsNames = {"Lp", "Imię i Nazwisko Sąsiadów", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
+			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
 	        for (int i = 0; i < columnsNames.length; i++) {
 	            Cell cell = headerRow.createCell(i);
 	            cell.setCellValue(columnsNames[i]);
@@ -282,6 +285,18 @@ public class ProcessFile {
 	        		cell8.setCellValue(KERG);
 	        	}
 	        }
+	        
+	        for(int j=1; j<rowCount; j++) {
+	        	//sheet.getRow(j).setHeight((short)9);
+	        	for(int k=0; k<9; k++) {
+	        		Cell cell=sheet.getRow(j).getCell(k);
+	        		if(cell != null) {
+	        			cell.setCellStyle(styleRest);
+	        		}
+	        	}
+	        	
+	        }
+	        
 	        for(int j=0; j<9; j++) {
 	        	sheet.autoSizeColumn(j);
 	        }

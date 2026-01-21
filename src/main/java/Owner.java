@@ -63,10 +63,10 @@ public class Owner {
 			output += name;
 		} else
 			output += name + "- " + participation;
-		
+		/*
 		output += "\n adres:"+AddressStreet+","+AddressPostCode;
 		if(getAddress2St()!=null  && ! getAddress2St().equals(getAddressStreet()))
-			output += "\n adres2:"+Address2St+","+Address2Code;
+			output += "\n adres2:"+Address2St+","+Address2Code;*/
 		
 		return output;
 	}
