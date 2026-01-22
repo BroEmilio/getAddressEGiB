@@ -113,15 +113,17 @@ public class GUI extends JFrame{
         	}		
     	});
 		
-		JMenuItem infoItem = new JMenuItem("Instrukcja obs�ugi");
-		final String info = "1. Wyświetl dane opisowe EGiB w geoportalu (tak �eby by�o wida� w�a�cicieli, numery KW, itp)\n"+
-					  "2. Naci�nij prawy przycisk i wybierz Zapisz stron� lub co� podobnego (w zale�no�ci od przegl�darki)\n"+
-					  "3. Zapisan� stron� wczytaj w programie\n"+
-					  "4. Podw�jne klikni�cie w numer dzia�ki skopiuje wybrane dane w�a�cicieli do schowka\n\n\n"+
-					  "Ewentualne uwagi prosz� kierowa� na adres: bro.emilio.1.1@gmail.com";
+		JMenuItem infoItem = new JMenuItem("Instrukcja obsługi");
+		final String info = "1. Wyświetl dane opisowe EGiB w geoportalu (tak żeby było widać właścicieli, numery KW, itp)\n"+
+					  "2. Naciśnij prawy przycisk i wybierz Zapisz stronę lub coś podobnego (w zależności od przeglądarki)\n"+
+					  "3. Zapisaną stronę wczytaj w programie\n"+
+					  "4. Podwójne kliknięcie w numer działki skopiuje wybrane dane właścicieli do schowka\n"+
+					  "5. Prawym przyciskiem można zaznaczyć lub odznaczyć działkę której adres wyeskportujesz do pliku xlsx \n"+
+					  " (można wykorzystać to do zawiadomień w korespondencji seryjnej) \n\n\n"+
+					  "Ewentualne uwagi proszę kierować na adres: bro.emilio.1.1@gmail.com";
 		infoItem.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		JOptionPane.showMessageDialog(null,info,"Instrukcja obs�ugi",1);
+        		JOptionPane.showMessageDialog(null,info,"Instrukcja obsługi",1);
         	}
 		});
 		menuFile.add(loadItem);
@@ -135,7 +137,7 @@ public class GUI extends JFrame{
 	}
 	
 	private void initialize() {
-		frame = new JFrame("szkicEGiB v0.98");
+		frame = new JFrame("geoEGiB v0.99");
 		frame.setBounds(100, 100, 345, 393);
 		frame.setMinimumSize(new Dimension(300,350));
 		frame.setMaximumSize(new Dimension(600,700));
@@ -207,7 +209,7 @@ public class GUI extends JFrame{
 		frame.getContentPane().add(selectAllButton, gbc_selectButton);
 			
 		JLabel lblInfoFieldNum = new JLabel(
-				"<html><div style='text-align:center;'>Podw�jne klikni�cie w nr dzia�ki spowoduje "
+				"<html><div style='text-align:center;'>Podwójne kliknięcie w nr działki spowoduje "
 				+ "skopiowanie danych do schowka</div></html>");
 		lblInfoFieldNum.setFont(new Font("Arial Narrow", Font.ITALIC, 10));
 		GridBagConstraints gbc_lblInfoFieldNum = new GridBagConstraints();
