@@ -123,8 +123,6 @@ public class ProcessFile {
 			} else
 				// get institutions names
 				if(! nameList[0].contains("małżeństwo")) {
-					
-					
 					String nameInstitution = "";
 					if(nameList[0].contains("</td>")) {
 						nameInstitution = nameList[0].split("</td>")[0].toString();
