@@ -7,7 +7,7 @@ public class SavingFileProfile {
 	Path savingFile;
 	JFileChooser saveChooser;
 	String nameSavingFile;
-	String extensionForFile = "xlsx";	//set extension for saving file
+	String extensionForFile = "xlsm";	//set extension for saving file
 	
 	void setSavingFileProfile() {
 		configureSaveChooser(saveFilter);

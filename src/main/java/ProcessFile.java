@@ -1,10 +1,14 @@
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.JOptionPane;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
 
@@ -14,6 +18,7 @@ public class ProcessFile {
 	SavingFileProfile saver;
 	ArrayList<FieldData> listFieldsData = new ArrayList<FieldData>();
 	String KERG ="";
+	String installFolder="";
 	
 	public ProcessFile(Path file) {
 		this.loadedFile = file;
@@ -203,8 +208,15 @@ public class ProcessFile {
 	
 	boolean exportToXLSX(ArrayList<FieldData> selectedFieldsData) {
 		try {
-			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("Właściciele");
+			String fullPath = GUI.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            File jarFile = new File(fullPath);
+            installFolder = jarFile.getParent();
+            System.out.println("installFolder: "+installFolder);
+            FileInputStream fis = new FileInputStream(installFolder+"\\Adresy-szablon.xlsm");
+            Workbook workbook = new XSSFWorkbook(fis);
+            Sheet sheet = workbook.getSheetAt(0);
+			//Workbook workbook = new XSSFWorkbook();
+			//Sheet sheet = workbook.createSheet("Właściciele");
 			Row headerRow = sheet.createRow(0);
 			CellStyle styleHeader = workbook.createCellStyle();
 	        Font font = workbook.createFont();
@@ -220,7 +232,7 @@ public class ProcessFile {
 	        fontRest.setFontHeightInPoints((short) 9);
 	        styleRest.setFont(fontRest);
 	        
-			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty" };
+			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty", "[ ]przyjęcia", "[ ]ustalenia", "[ ]wznowienia", "[ ]wyznaczenia" };
 	        for (int i = 0; i < columnsNames.length; i++) {
 	            Cell cell = headerRow.createCell(i);
 	            cell.setCellValue(columnsNames[i]);
@@ -286,6 +298,19 @@ public class ProcessFile {
 	        	}
 	        }
 	        
+	        CellRangeAddressList addressList = new CellRangeAddressList(1, rowCount-1, 10, 13);
+	        XSSFSheet xssfSheet = null;
+	        if (sheet instanceof XSSFSheet) {
+	            xssfSheet = (XSSFSheet) sheet;
+	        }
+            DataValidationHelper validationHelper = new XSSFDataValidationHelper(xssfSheet);
+            String[] options = {"[ ] NIE", "[X] TAK"};
+            DataValidationConstraint constraint = validationHelper.createExplicitListConstraint(options);
+            DataValidation validation = validationHelper.createValidation(constraint, addressList);
+            validation.setShowErrorBox(true);
+            validation.setEmptyCellAllowed(false);
+            xssfSheet.addValidationData(validation);
+	        
 	        for(int j=1; j<rowCount; j++) {
 	        	//sheet.getRow(j).setHeight((short)9);
 	        	for(int k=0; k<9; k++) {
@@ -293,6 +318,11 @@ public class ProcessFile {
 	        		if(cell != null) {
 	        			cell.setCellStyle(styleRest);
 	        		}
+	        	for(k=10; k<=13; k++) {
+	        		Cell cellCheckbox = sheet.getRow(j).createCell(k);
+	        		cellCheckbox=sheet.getRow(j).getCell(k);
+	        		cellCheckbox.setCellValue(options[0]);
+	        	}
 	        	}
 	        	
 	        }
@@ -313,6 +343,10 @@ public class ProcessFile {
 			e.printStackTrace();
 			return false;
 		} catch (IOException e) {
+			displayErrorFrame(e.toString());
+			e.printStackTrace();
+			return false;
+		} catch (URISyntaxException e) {
 			displayErrorFrame(e.toString());
 			e.printStackTrace();
 			return false;
