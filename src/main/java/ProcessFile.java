@@ -248,6 +248,7 @@ public class ProcessFile {
 	        	int sizeOwners = currentField.getOwnersList().size();
 	        	for(int k=0; k<sizeOwners; k++) {
 	        		Owner currentOwner = currentField.getOwnersList().get(k);
+	        		checkWhiteSpaces(currentOwner.getName());
 	        		Row nextRow=null;
 	        		if(sheet.getRow(rowCount) == null) {
 	        			nextRow = sheet.createRow(rowCount);
@@ -325,7 +326,7 @@ public class ProcessFile {
 	        	}
 	        	}
 	        	
-	        }
+	        } 
 	        
 	        for(int j=0; j<9; j++) {
 	        	sheet.autoSizeColumn(j);
@@ -354,4 +355,28 @@ public class ProcessFile {
 	return true;
 	}
 	
+	boolean checkWhiteSpaces(String checkingString) {
+		boolean find= false;
+		for (int i = 0; i < checkingString.length(); i++) {
+            char c = checkingString.charAt(i);
+            String opis="";
+            if (Character.isWhitespace(c)) {
+                // Mapowanie znaku na czytelną nazwę
+                    switch (c) {
+                    case ' ' : continue;
+                    case '\n' : opis="\\n (nowa linia)";
+                    case '\t' : opis= "\\t (tabulacja)";
+                    case '\r' : opis= "\\r (powrót karetki)";
+                    default : opis= "[inny znak biały]";
+                };
+                find = true;
+                System.out.println("Pozycja " + i + ": " + opis);
+            }
+        }
+		if(find) {
+			System.out.println(checkingString);
+			return true;
+		} else return false;
+	}
 }
+	
