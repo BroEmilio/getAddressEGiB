@@ -7,7 +7,7 @@ public class SavingFileProfile {
 	Path savingFile;
 	JFileChooser saveChooser;
 	String nameSavingFile;
-	String extensionForFile = "xlsm";	//set extension for saving file
+	String extensionForFile = "xlsx";	//set extension for saving file
 	
 	void setSavingFileProfile() {
 		configureSaveChooser(saveFilter);
@@ -19,7 +19,7 @@ public class SavingFileProfile {
 
 	JFileChooser configureSaveChooser(FileNameExtensionFilter filter) {
 		String userDir = System.getProperty("user.home");
-		JFileChooser chooser= new JFileChooser(userDir +"/Desktop");
+		JFileChooser chooser= new JFileChooser(userDir +"/Desktop/geoEGiBforms");
 		chooser.setFileFilter(filter);
     	chooser.setDialogTitle("Zapisz plik jako");
     	chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

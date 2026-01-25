@@ -212,11 +212,11 @@ public class ProcessFile {
             File jarFile = new File(fullPath);
             installFolder = jarFile.getParent();
             System.out.println("installFolder: "+installFolder);
-            FileInputStream fis = new FileInputStream(installFolder+"\\Adresy-szablon.xlsm");
-            Workbook workbook = new XSSFWorkbook(fis);
-            Sheet sheet = workbook.getSheetAt(0);
-			//Workbook workbook = new XSSFWorkbook();
-			//Sheet sheet = workbook.createSheet("Właściciele");
+            //FileInputStream fis = new FileInputStream(installFolder+"\\Adresy-szablon.xlsm");
+            //Workbook workbook = new XSSFWorkbook(fis);
+            //Sheet sheet = workbook.getSheetAt(0);
+			Workbook workbook = new XSSFWorkbook();
+			Sheet sheet = workbook.createSheet("Właściciele");
 			Row headerRow = sheet.createRow(0);
 			CellStyle styleHeader = workbook.createCellStyle();
 	        Font font = workbook.createFont();
@@ -232,7 +232,7 @@ public class ProcessFile {
 	        fontRest.setFontHeightInPoints((short) 9);
 	        styleRest.setFont(fontRest);
 	        
-			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty", "[ ]przyjęcia", "[ ]ustalenia", "[ ]wznowienia", "[ ]wyznaczenia" };
+			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty", "[ ]przedmiotowa" };
 	        for (int i = 0; i < columnsNames.length; i++) {
 	            Cell cell = headerRow.createCell(i);
 	            cell.setCellValue(columnsNames[i]);
@@ -319,11 +319,14 @@ public class ProcessFile {
 	        		if(cell != null) {
 	        			cell.setCellStyle(styleRest);
 	        		}
-	        	for(k=10; k<=13; k++) {
-	        		Cell cellCheckbox = sheet.getRow(j).createCell(k);
-	        		cellCheckbox=sheet.getRow(j).getCell(k);
+	        	//for(k=10; k<=13; k++) {
+	        		//Cell cellCheckbox = sheet.getRow(j).createCell(k);
+	        		//cellCheckbox=sheet.getRow(j).getCell(k);
+	        		//cellCheckbox.setCellValue(options[0]);
+	        	//}
+	        		Cell cellCheckbox = sheet.getRow(j).createCell(10);
+	        		cellCheckbox=sheet.getRow(j).getCell(10);
 	        		cellCheckbox.setCellValue(options[0]);
-	        	}
 	        	}
 	        	
 	        } 
