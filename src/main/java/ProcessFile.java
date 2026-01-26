@@ -122,12 +122,12 @@ public class ProcessFile {
 			// get individual person name
 			if(nameList[0].contains("Rodzice")){
 				ownerName += getNameIndyvidual(nameList[0]);
-				setAddress(nameList[1], owner);
+				if(nameList.length>1)
+					if(nameList[1] != null)
+						setAddress(nameList[1], owner);
 			} else
 				// get institutions names
 				if(! nameList[0].contains("małżeństwo")) {
-					
-					
 					String nameInstitution = "";
 					if(nameList[0].contains("</td>")) {
 						nameInstitution = nameList[0].split("</td>")[0].toString();
