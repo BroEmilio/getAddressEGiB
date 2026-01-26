@@ -267,7 +267,7 @@ public class ProcessFile {
 		            		cell2.setCellValue(currentOwner.getAddress2St());
 		            		Cell cell3 = nextRow.createCell(3);
 		            		cell3.setCellValue(currentOwner.getAddress2Code());
-	        			} else { // if addresses are different
+	        			} else { // if addreses are different
 	        				if(currentOwner.getAddressStreet()==null && currentOwner.getAddress2St()!=null) {
 	        					Cell cell2 = nextRow.createCell(2);
 	    	            		cell2.setCellValue(currentOwner.getAddress2St());
