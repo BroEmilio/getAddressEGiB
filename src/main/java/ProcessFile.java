@@ -232,7 +232,7 @@ public class ProcessFile {
 	        fontRest.setFontHeightInPoints((short) 9);
 	        styleRest.setFont(fontRest);
 	        
-			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty", "[ ]przedmiotowa" };
+			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty", "przedmiotowa" };
 	        for (int i = 0; i < columnsNames.length; i++) {
 	            Cell cell = headerRow.createCell(i);
 	            cell.setCellValue(columnsNames[i]);
