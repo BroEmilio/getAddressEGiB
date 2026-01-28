@@ -1,3 +1,4 @@
+import java.awt.Desktop;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.*;
@@ -56,7 +57,6 @@ public class ProcessFile {
 					fieldData.setObreb(getObreb(tbodyObreb, fieldData));
 				}
 			}
-			
 			
 			
 		} catch (FileNotFoundException e) {
@@ -147,7 +147,7 @@ public class ProcessFile {
 							setAddress2(splittedColumn[1], owner);
 						}
 					}
-				} 
+				}
 				
 			owner.setName(ownerName);
 			owner.setOwnershipType(ownershipType);
@@ -342,6 +342,9 @@ public class ProcessFile {
 			FileOutputStream fileOut = new FileOutputStream(saveFile);
 	        workbook.write(fileOut);
 	        workbook.close();
+	        if(Desktop.isDesktopSupported()) {
+	        	Desktop.getDesktop().open(saveFile);
+	        }
 		} catch (FileNotFoundException e) {
 			displayErrorFrame(e.toString());
 			e.printStackTrace();

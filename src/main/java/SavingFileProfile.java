@@ -21,12 +21,15 @@ public class SavingFileProfile {
 		String userDir = System.getProperty("user.home");
 		JFileChooser chooser= new JFileChooser(userDir +"/Desktop/geoEGiBforms");
 		chooser.setFileFilter(filter);
-    	chooser.setDialogTitle("Zapisz plik jako");
-    	chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    	chooser.setDialogTitle("Zapisz plik w folderze");
+    	chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     	chooser.setAcceptAllFileFilterUsed(false);
-    	chooser.setSelectedFile(new File("Adresy"+nameSavingFile));
-    	chooser.showSaveDialog(null);
-    	savingFile = chooser.getSelectedFile().toPath();
+    	//chooser.setSelectedFile(new File("Adresy"+nameSavingFile));
+    	int userSelection = chooser.showSaveDialog(null);
+    	if (userSelection == JFileChooser.APPROVE_OPTION) {
+    		savingFile = chooser.getSelectedFile().toPath().resolve("Adresy"+nameSavingFile);
+        	
+    	}
     	
     	return chooser;
 	}
