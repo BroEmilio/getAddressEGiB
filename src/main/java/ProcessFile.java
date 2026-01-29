@@ -248,14 +248,15 @@ public class ProcessFile {
 	        	int sizeOwners = currentField.getOwnersList().size();
 	        	for(int k=0; k<sizeOwners; k++) {
 	        		Owner currentOwner = currentField.getOwnersList().get(k);
-	        		checkWhiteSpaces(currentOwner.getName());
+	        		//checkWhiteSpaces(currentOwner.getName());
 	        		Row nextRow=null;
 	        		if(sheet.getRow(rowCount) == null) {
 	        			nextRow = sheet.createRow(rowCount);
 	        		} else nextRow=firstRow;
 	        		rowCount++;
 	        		Cell cell = nextRow.createCell(1);
-	        		cell.setCellValue(currentOwner.getName());
+	        		String cleanName = currentOwner.getName().trim().replaceAll("\\s+", " "); 
+	        		cell.setCellValue(cleanName);
 	        		if(currentOwner.getAddress2St() == null) { //if second Address is empty
 	            		Cell cell2 = nextRow.createCell(2);
 	            		cell2.setCellValue(currentOwner.getAddressStreet());
@@ -360,6 +361,7 @@ public class ProcessFile {
 		} 
 	return true;
 	}
+	
 	
 	boolean checkWhiteSpaces(String checkingString) {
 		boolean find= false;
