@@ -240,12 +240,15 @@ public class ProcessFile {
 	        fontRest.setFontName("Arial");
 	        fontRest.setFontHeightInPoints((short) 9);
 	        styleRest.setFont(fontRest);
-	        styleRest.setWrapText(true);
+	        styleRest.setVerticalAlignment(VerticalAlignment.CENTER);
 	        
 	        CellStyle styleBoldAndCenter = workbook.createCellStyle();
 	        styleBoldAndCenter.setFont(boldFont);
 	        styleBoldAndCenter.setAlignment(HorizontalAlignment.CENTER);
 	        styleBoldAndCenter.setVerticalAlignment(VerticalAlignment.CENTER);
+	        
+	        CellStyle styleWrapText = workbook.createCellStyle();
+	        styleWrapText.setWrapText(true);
 	        
 			String[] columnsNames = {"przedmiotowa", "Imie_Nazwisko", "Nr_dzialek_Obreb", "Adres", "Kod_pocztowy", "KW", "KERG" };
 	        for (int i = 0; i < columnsNames.length; i++) {
@@ -271,7 +274,7 @@ public class ProcessFile {
         		for(String fullField : stringList) {
         			String[] splittedField = fullField.split(";");
         			if(splittedField.length>2) {
-        				obreb_nr += splittedField[1]+" obręb: "+splittedField[0]+"\n";
+        				obreb_nr += splittedField[1]+" obręb:"+splittedField[0]+"\n";
         				fieldNumbers.add(splittedField[1]);
         				KW += splittedField[2]+"\n";
         			}
@@ -305,6 +308,19 @@ public class ProcessFile {
 	        DataValidationConstraint constraint = helper.createExplicitListConstraint(fieldsOption);
 	        DataValidation validation = helper.createValidation(constraint, addressList);
 	        sheet.addValidationData(validation);
+	        
+	        for(int j=1; j<rowCount; j++) {
+	        	//sheet.getRow(j).setHeight((short)9);
+	        	for(int k=1; k<7; k++) {
+	        		Cell cell=sheet.getRow(j).getCell(k);
+	        		if(cell != null) {
+	        			cell.setCellStyle(styleRest);
+	        		}
+	        		if(k==2 || k==5) {
+	        			cell.setCellStyle(styleWrapText);
+	        		}
+	        	}
+	        }
 	        
 	        /*
 	        for(int j=0; j<selectedFieldsData.size(); j++) {
@@ -399,11 +415,12 @@ public class ProcessFile {
 	        	
 	        } */
 	        
-	        for(int j=0; j<9; j++) {
+	        for(int j=0; j<7; j++) {
 	        	sheet.autoSizeColumn(j);
 	        }
 	        sheet.setColumnWidth(1, 40 * 256);
 	        sheet.setColumnWidth(2, 30 * 256);
+	        sheet.setColumnWidth(5, 18 * 256);
 			saver = new SavingFileProfile();
 			saver.setNameLoadedFile(loadedFile.getFileName().toString());
 			saver.setSavingFileProfile();
