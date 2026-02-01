@@ -4,6 +4,13 @@ import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.swing.JOptionPane;
 
 import org.apache.poi.ss.usermodel.*;
@@ -222,6 +229,8 @@ public class ProcessFile {
 	        Font font = workbook.createFont();
 	        font.setFontName("Arial");
 	        font.setFontHeightInPoints((short) 11);
+	        Font boldFont = workbook.createFont();
+	        boldFont.setBold(true);
 	        styleHeader.setFont(font);
 	        styleHeader.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
 	        styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -231,8 +240,14 @@ public class ProcessFile {
 	        fontRest.setFontName("Arial");
 	        fontRest.setFontHeightInPoints((short) 9);
 	        styleRest.setFont(fontRest);
+	        styleRest.setWrapText(true);
 	        
-			String[] columnsNames = {"Lp", "Imię i Nazwisko", "Adres", "Kod pocztowy i poczta", "Obręb", "Nr działki", "Ark mapy", "KW", "KERG", "NR Roboty", "przedmiotowa" };
+	        CellStyle styleBoldAndCenter = workbook.createCellStyle();
+	        styleBoldAndCenter.setFont(boldFont);
+	        styleBoldAndCenter.setAlignment(HorizontalAlignment.CENTER);
+	        styleBoldAndCenter.setVerticalAlignment(VerticalAlignment.CENTER);
+	        
+			String[] columnsNames = {"przedmiotowa", "Imie_Nazwisko", "Nr_dzialek_Obreb", "Adres", "Kod_pocztowy", "KW", "KERG" };
 	        for (int i = 0; i < columnsNames.length; i++) {
 	            Cell cell = headerRow.createCell(i);
 	            cell.setCellValue(columnsNames[i]);
@@ -240,6 +255,58 @@ public class ProcessFile {
 	            sheet.autoSizeColumn(i);
 	        }
 	        int rowCount=1;
+	        Map<Owner, List<String>> uniqueOwners = getUniqueOwnersList(selectedFieldsData);
+	        Set<String> fieldNumbers = new HashSet<>();
+	        for (Map.Entry<Owner, List<String>> entry : uniqueOwners.entrySet()) {
+	            Owner owner = entry.getKey();
+	            List<String> stringList = entry.getValue();
+	            Row nextRow = sheet.createRow(rowCount);
+	            Cell cell1 = nextRow.createCell(1);
+	            String cleanName = owner.getName().trim().replaceAll("\\s+", " "); 
+        		cell1.setCellValue(cleanName);
+        		
+        		Cell cell2 = nextRow.createCell(2);
+        		String obreb_nr="";
+        		String KW="";
+        		for(String fullField : stringList) {
+        			String[] splittedField = fullField.split(";");
+        			if(splittedField.length>2) {
+        				obreb_nr += splittedField[1]+" obręb: "+splittedField[0]+"\n";
+        				fieldNumbers.add(splittedField[1]);
+        				KW += splittedField[2]+"\n";
+        			}
+        		}
+        		cell2.setCellValue(obreb_nr);
+        		cell2.setCellStyle(styleRest);
+        		
+        		Cell cell3 = nextRow.createCell(3);
+        		cell3.setCellValue(owner.getAddressStreet());
+        		
+        		Cell cell4 = nextRow.createCell(4);
+        		cell4.setCellValue(owner.getAddressPostCode());
+        		
+        		Cell cell5 = nextRow.createCell(5);
+        		cell5.setCellValue(KW);
+        		
+        		Cell cell6 = nextRow.createCell(6);
+        		cell6.setCellValue(KERG);
+        		
+        		rowCount++;
+        		//nextRow.setHeight((short) -1);
+        		
+	        }
+	        
+	        String[] fieldsOption = fieldNumbers.toArray(new String[0]);
+	        Cell cell0 = sheet.getRow(1).createCell(0);
+    		cell0.setCellValue(fieldsOption[0]);
+    		cell0.setCellStyle(styleBoldAndCenter);
+	        DataValidationHelper helper = sheet.getDataValidationHelper();
+	        CellRangeAddressList addressList = new CellRangeAddressList(1, 1, 0, 0);
+	        DataValidationConstraint constraint = helper.createExplicitListConstraint(fieldsOption);
+	        DataValidation validation = helper.createValidation(constraint, addressList);
+	        sheet.addValidationData(validation);
+	        
+	        /*
 	        for(int j=0; j<selectedFieldsData.size(); j++) {
 	        	Row firstRow = sheet.createRow(rowCount);
 	        	Cell cell0 = firstRow.createCell(0);
@@ -298,7 +365,7 @@ public class ProcessFile {
 	        		Cell cell8 = nextRow.createCell(8);
 	        		cell8.setCellValue(KERG);
 	        	}
-	        }
+	        } 
 	        
 	        CellRangeAddressList addressList = new CellRangeAddressList(1, rowCount-1, 10, 13);
 	        XSSFSheet xssfSheet = null;
@@ -330,11 +397,13 @@ public class ProcessFile {
 	        		cellCheckbox.setCellValue(options[0]);
 	        	}
 	        	
-	        } 
+	        } */
 	        
 	        for(int j=0; j<9; j++) {
 	        	sheet.autoSizeColumn(j);
 	        }
+	        sheet.setColumnWidth(1, 40 * 256);
+	        sheet.setColumnWidth(2, 30 * 256);
 			saver = new SavingFileProfile();
 			saver.setNameLoadedFile(loadedFile.getFileName().toString());
 			saver.setSavingFileProfile();
@@ -385,6 +454,21 @@ public class ProcessFile {
 			System.out.println(checkingString);
 			return true;
 		} else return false;
+	}
+	
+	Map<Owner, List<String>> getUniqueOwnersList(ArrayList<FieldData> selectedFieldsData){
+		Map<Owner, List<String>> uniqueOwners = new HashMap<>();
+		
+		for(FieldData field:selectedFieldsData) {
+			for(Owner owner:field.getOwnersList()) {
+				String fieldString = field.getObreb()+";"+field.getFieldNumber()+";"+field.getKW();
+				uniqueOwners.computeIfAbsent(owner, k -> new ArrayList<>())
+                .add(fieldString);
+				
+			}
+		}
+		return uniqueOwners;
+		
 	}
 }
 	
