@@ -4,11 +4,14 @@ import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
@@ -243,12 +246,16 @@ public class ProcessFile {
 	        styleRest.setVerticalAlignment(VerticalAlignment.CENTER);
 	        
 	        CellStyle styleBoldAndCenter = workbook.createCellStyle();
+	        DataFormat fmt = workbook.createDataFormat();
 	        styleBoldAndCenter.setFont(boldFont);
 	        styleBoldAndCenter.setAlignment(HorizontalAlignment.CENTER);
 	        styleBoldAndCenter.setVerticalAlignment(VerticalAlignment.CENTER);
+	        styleBoldAndCenter.setDataFormat(fmt.getFormat("@"));
 	        
 	        CellStyle styleWrapText = workbook.createCellStyle();
 	        styleWrapText.setWrapText(true);
+	        styleWrapText.setAlignment(HorizontalAlignment.CENTER);
+	        styleWrapText.setVerticalAlignment(VerticalAlignment.CENTER);
 	        
 			String[] columnsNames = {"przedmiotowa", "Imie_Nazwisko", "Nr_dzialek_Obreb", "Adres", "Kod_pocztowy", "KW", "KERG" };
 	        for (int i = 0; i < columnsNames.length; i++) {
@@ -259,7 +266,8 @@ public class ProcessFile {
 	        }
 	        int rowCount=1;
 	        Map<Owner, List<String>> uniqueOwners = getUniqueOwnersList(selectedFieldsData);
-	        Set<String> fieldNumbers = new HashSet<>();
+	        uniqueOwners = sortUniqueOwnersMap(uniqueOwners);
+	        Set<String> fieldNumbers = new TreeSet<>();
 	        for (Map.Entry<Owner, List<String>> entry : uniqueOwners.entrySet()) {
 	            Owner owner = entry.getKey();
 	            List<String> stringList = entry.getValue();
@@ -283,10 +291,26 @@ public class ProcessFile {
         		cell2.setCellStyle(styleRest);
         		
         		Cell cell3 = nextRow.createCell(3);
-        		cell3.setCellValue(owner.getAddressStreet());
+        		if(owner.getAddressStreet() != null) {
+	        		String cleanAddress = cleanWhiteSpaces(owner.getAddressStreet());
+	        		if(owner.getAddress2St() != null) {
+	        			String secondAdress = cleanWhiteSpaces(owner.getAddress2St());
+	        			if(! cleanAddress.equals(secondAdress)) {
+	        				cleanAddress += "\r\n" + secondAdress;
+	        			}
+	        		}
+	        		cell3.setCellValue(cleanAddress);
+        		}
         		
         		Cell cell4 = nextRow.createCell(4);
-        		cell4.setCellValue(owner.getAddressPostCode());
+        		String allPostCode = cleanWhiteSpaces(owner.getAddressPostCode());
+        			if(owner.getAddress2Code() != null){
+        				String secondPostCode = cleanWhiteSpaces(owner.getAddress2Code());
+        				if(! allPostCode.equals(secondPostCode)) {
+        					allPostCode += "\r\n" + secondPostCode;
+        				}
+        			}
+        		cell4.setCellValue(allPostCode);
         		
         		Cell cell5 = nextRow.createCell(5);
         		cell5.setCellValue(KW);
@@ -316,7 +340,7 @@ public class ProcessFile {
 	        		if(cell != null) {
 	        			cell.setCellStyle(styleRest);
 	        		}
-	        		if(k==2 || k==5) {
+	        		if(k>1 && k<6) {
 	        			cell.setCellStyle(styleWrapText);
 	        		}
 	        	}
@@ -428,10 +452,12 @@ public class ProcessFile {
 			File saveFile = savingFile.toFile();
 			FileOutputStream fileOut = new FileOutputStream(saveFile);
 	        workbook.write(fileOut);
+	        fileOut.close();
 	        workbook.close();
 	        if(Desktop.isDesktopSupported()) {
 	        	Desktop.getDesktop().open(saveFile);
 	        }
+	        
 		} catch (FileNotFoundException e) {
 			displayErrorFrame(e.toString());
 			e.printStackTrace();
@@ -486,6 +512,28 @@ public class ProcessFile {
 		}
 		return uniqueOwners;
 		
+	}
+	
+	Map<Owner, List<String>> sortUniqueOwnersMap(Map<Owner, List<String>> uniqueOwners){
+		Map<Owner, List<String>> sortedMap = uniqueOwners.entrySet()
+	            .stream()
+	            .sorted(Comparator.comparing(entry -> entry.getValue().get(0)))
+	            .collect(Collectors.toMap(
+	                Map.Entry::getKey, 
+	                Map.Entry::getValue, 
+	                (oldValue, newValue) -> oldValue, 
+	                LinkedHashMap::new
+	            ));
+		
+		return sortedMap;
+	}
+	
+	String cleanWhiteSpaces(String input) {
+		String output = null;
+		if(input != null) {
+			output = input.trim().replaceAll("\\s+", " ");
+		}
+		return output;
 	}
 }
 	
