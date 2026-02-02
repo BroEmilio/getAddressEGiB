@@ -19,11 +19,11 @@ public class SetPolishForGUI {
         UIManager.put("FileChooser.filesOfTypeLabelText","Pliki typu:");
         UIManager.put("FileChooser.filesOfTypeLabelMnemonic",""+KeyEvent.VK_P);
  
-        UIManager.put("FileChooser.upFolderToolTipText","PrzejdŸ wy¿ej");
+        UIManager.put("FileChooser.upFolderToolTipText","Przejdz wyÅ¼ej");
         UIManager.put("FileChooser.homeFolderToolTipText","Pulpit");
         UIManager.put("FileChooser.newFolderToolTipText","Nowy katalog");
         UIManager.put("FileChooser.listViewButtonToolTipText","Lista");
-        UIManager.put("FileChooser.detailsViewButtonToolTipText","Szczegó³y");
+        UIManager.put("FileChooser.detailsViewButtonToolTipText","SzczegÃ³Å‚y");
  
         UIManager.put("FileChooser.fileNameHeaderText","Nazwa");
         UIManager.put("FileChooser.fileSizeHeaderText","Rozmiar");
@@ -31,12 +31,12 @@ public class SetPolishForGUI {
         UIManager.put("FileChooser.fileDateHeaderText","Modyfikacja");
         UIManager.put("FileChooser.fileAttrHeaderText","Atrybuty");
  
-        UIManager.put("FileChooser.newFolderErrorText","B³¹d podczas tworzenia katalogu");
+        UIManager.put("FileChooser.newFolderErrorText","BÅ‚Ä…d podczas tworzenia katalogu");
  
         UIManager.put("FileChooser.saveButtonText","Zapisz");
         UIManager.put("FileChooser.saveButtonMnemonic",""+KeyEvent.VK_Z);
  
-        UIManager.put("FileChooser.openButtonText","Otwórz");
+        UIManager.put("FileChooser.openButtonText","OtwÃ³rz");
         UIManager.put("FileChooser.openButtonMnemonic",""+KeyEvent.VK_O);
  
         UIManager.put("FileChooser.cancelButtonText","Anuluj");

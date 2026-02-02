@@ -74,11 +74,11 @@ public String toString() {
 		shortSpace = false;
 		if(isFirst) {
 			if(owner.getOwnershipType().equals("Własność"))
-				output += "WŁ. ";
+				output += "wł. ";
 			isFirst = false;
 			shortSpace = true;
 		} else if(! owner.getOwnershipType().equals("Własność")) {
-			output += "ZA. ";
+			output += "za. ";
 			shortSpace = true;
 		}
 		

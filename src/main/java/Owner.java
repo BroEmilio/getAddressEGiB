@@ -64,7 +64,7 @@ public class Owner {
 		if(participation.equals("1/1")) {
 			output += name;
 		} else
-			output += name + "- " + participation;
+			output += name + " - " + participation;
 		/*
 		output += "\n adres:"+AddressStreet+","+AddressPostCode;
 		if(getAddress2St()!=null  && ! getAddress2St().equals(getAddressStreet()))

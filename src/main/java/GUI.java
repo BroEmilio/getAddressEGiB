@@ -137,7 +137,7 @@ public class GUI extends JFrame{
 	}
 	
 	private void initialize() {
-		frame = new JFrame("geoEGiB v0.99");
+		frame = new JFrame("geoEGiB v1.02");
 		frame.setBounds(100, 100, 345, 393);
 		frame.setMinimumSize(new Dimension(300,350));
 		frame.setMaximumSize(new Dimension(600,700));

@@ -106,16 +106,16 @@ public class ProcessFile {
 			
 			// get marriage names
 			if(nameList[0].contains("małżeństwo")) {
-				ownerName +="MAŁŻ.";
+				ownerName +="małż. ";
 				boolean isFirst = true;
 				for(int j=0; j<nameList.length; j++){
 					String line = nameList[j];
 					if(line.contains("Rodzice")){
 						String nameMeriage = getNameIndyvidual(line);
-						nameMeriage = nameMeriage.substring(1);
+						nameMeriage = nameMeriage.substring(0);
 						ownerName += nameMeriage;
 						if(isFirst){
-							ownerName += "i \n   ";
+							ownerName += " i \r\n        ";
 							String AddressFull = nameList[2];
 							setAddress(AddressFull, owner);
 							isFirst=false;
@@ -144,19 +144,20 @@ public class ProcessFile {
 					} else {
 						nameInstitution = nameList[0].split("\n")[0].toString();
 					}
+					nameInstitution = toTitleCase(nameInstitution);
 					ownerName = nameInstitution;
 					
 					//set institutions address
 					org.jsoup.select.Elements NameAndAdress = tName.select("td");
 					String[] splittedColumn = NameAndAdress.toString().split("<br>\n");
-					if(splittedColumn.length>2 && splittedColumn[1]!=null){
+					if(splittedColumn.length>1 && splittedColumn[1]!=null){
 						if(owner.getAddressStreet()==null)
 							setAddress(splittedColumn[1], owner);
-					} else {
+					} /*else {
 						if(splittedColumn.length>1 && splittedColumn[1]!=null){
 							setAddress2(splittedColumn[1], owner);
 						}
-					}
+					}*/
 				}
 				
 			owner.setName(ownerName);
@@ -172,6 +173,7 @@ public class ProcessFile {
 	String getNameIndyvidual (String input){
 		String name = null;
 		name = input.split("Rodzice")[0];
+		name =  toTitleCase(name);
 		return name;
 	}
 	
@@ -179,9 +181,9 @@ public class ProcessFile {
 		String withoutTD = fullAddress.split("</td>")[0];
 		String[] splitAddress= withoutTD.split(";");
 		if(splitAddress[0]!=null){
-			owner.setAddressStreet(splitAddress[0]);
+			owner.setAddressStreet(toTitleCase(splitAddress[0]));
 			if(splitAddress.length>1 && splitAddress[1]!=null)
-				owner.setAddressPostCode(splitAddress[1]);
+				owner.setAddressPostCode(toTitleCase(splitAddress[1]));
 			return true;
 		} else return false;
 	}
@@ -190,9 +192,9 @@ public class ProcessFile {
 		String withoutTD = fullAddress.split("</td>")[0];
 		String[] splitAddress= withoutTD.split(";");
 		if(splitAddress[0]!=null){
-			owner.setAddress2St(splitAddress[0]);
+			owner.setAddress2St(toTitleCase(splitAddress[0]));
 			if(splitAddress.length>1 && splitAddress[1]!=null)
-				owner.setAddress2Code(splitAddress[1]);
+				owner.setAddress2Code(toTitleCase(splitAddress[1]));
 			return true;
 		} else return false;
 	}
@@ -203,11 +205,13 @@ public class ProcessFile {
 			for(org.jsoup.nodes.Element obrebRow : rowsObreb ) {
 				if(obrebRow.text().contains("Nazwa obrębu")) {
 					obrebName=obrebRow.text().split(":")[1];
+					obrebName = toTitleCase(obrebName);
 				}
 				if(obrebRow.text().contains("Numer obrębu")) {
 					String[] splittedNumber = obrebRow.text().split(":");
 					String fieldObreb = fieldData.getFieldId().split("\\.")[1];
 					if(fieldObreb.equals(splittedNumber[1]));{
+						obrebName = toTitleCase(obrebName);
 						return obrebName;
 					}
 					
@@ -273,8 +277,8 @@ public class ProcessFile {
 	            List<String> stringList = entry.getValue();
 	            Row nextRow = sheet.createRow(rowCount);
 	            Cell cell1 = nextRow.createCell(1);
-	            String cleanName = owner.getName().trim().replaceAll("\\s+", " "); 
-        		cell1.setCellValue(cleanName);
+	            //String cleanName = owner.getName().trim().replaceAll("\\s+", " "); 
+        		cell1.setCellValue(owner.getName());
         		
         		Cell cell2 = nextRow.createCell(2);
         		String obreb_nr="";
@@ -282,7 +286,7 @@ public class ProcessFile {
         		for(String fullField : stringList) {
         			String[] splittedField = fullField.split(";");
         			if(splittedField.length>2) {
-        				obreb_nr += splittedField[1]+" obręb:"+splittedField[0]+"\n";
+        				obreb_nr += splittedField[1]+" obręb: "+splittedField[0]+"\n";
         				fieldNumbers.add(splittedField[1]);
         				KW += splittedField[2]+"\n";
         			}
@@ -304,7 +308,7 @@ public class ProcessFile {
         		
         		Cell cell4 = nextRow.createCell(4);
         		String allPostCode = cleanWhiteSpaces(owner.getAddressPostCode());
-        			if(owner.getAddress2Code() != null){
+        			if(allPostCode != null && owner.getAddress2Code() != null){
         				String secondPostCode = cleanWhiteSpaces(owner.getAddress2Code());
         				if(! allPostCode.equals(secondPostCode)) {
         					allPostCode += "\r\n" + secondPostCode;
@@ -339,8 +343,6 @@ public class ProcessFile {
 	        		Cell cell=sheet.getRow(j).getCell(k);
 	        		if(cell != null) {
 	        			cell.setCellStyle(styleRest);
-	        		}
-	        		if(k>1 && k<6) {
 	        			cell.setCellStyle(styleWrapText);
 	        		}
 	        	}
@@ -534,6 +536,22 @@ public class ProcessFile {
 			output = input.trim().replaceAll("\\s+", " ");
 		}
 		return output;
+	}
+	
+	public static String toTitleCase(String text) {
+	    if (text == null || text.isEmpty()) return text;
+
+	    StringBuilder result = new StringBuilder();
+	    // Dzielimy na słowa według spacji
+	    for (String word : text.split("\\s+")) {
+	        if (!word.isEmpty()) {
+	            // Pierwsza litera -> Duża, reszta -> Mała
+	            result.append(Character.toUpperCase(word.charAt(0)))
+	                  .append(word.substring(1).toLowerCase())
+	                  .append(" ");
+	        }
+	    }
+	    return result.toString().trim();
 	}
 }
 	
