@@ -164,7 +164,7 @@ public class ProcessFile {
 			owner.setOwnershipType(ownershipType);
 			owner.setParticipation(participation);
 			ownersAndSharesList.add(owner);
-			System.out.println(owner);
+			//System.out.println(owner);
 		}
 		
 		return ownersAndSharesList;
@@ -278,7 +278,7 @@ public class ProcessFile {
 	            Row nextRow = sheet.createRow(rowCount);
 	            Cell cell1 = nextRow.createCell(1);
 	            //String cleanName = owner.getName().trim().replaceAll("\\s+", " "); 
-        		cell1.setCellValue(owner.getName());
+	            cell1.setCellValue(owner.getName());
         		
         		Cell cell2 = nextRow.createCell(2);
         		String obreb_nr="";
@@ -545,10 +545,20 @@ public class ProcessFile {
 	    // Dzielimy na słowa według spacji
 	    for (String word : text.split("\\s+")) {
 	        if (!word.isEmpty()) {
+	        	if(word.contains("-") && ! word.matches(".*\\d.*")) {
+		        	for (String word2 : word.split("-")) {
+		        		result.append(Character.toUpperCase(word2.charAt(0)))
+		                  .append(word2.substring(1).toLowerCase())
+		                  .append(" ");
+		        	}
+		        	
+		        } else {
+	        	
 	            // Pierwsza litera -> Duża, reszta -> Mała
 	            result.append(Character.toUpperCase(word.charAt(0)))
 	                  .append(word.substring(1).toLowerCase())
 	                  .append(" ");
+		        }
 	        }
 	    }
 	    return result.toString().trim();

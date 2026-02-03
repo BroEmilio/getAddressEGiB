@@ -77,10 +77,15 @@ public String toString() {
 				output += "wł. ";
 			isFirst = false;
 			shortSpace = true;
-		} else if(! owner.getOwnershipType().equals("Własność")) {
-			output += "za. ";
+		} else if(owner.getOwnershipType().equals("Użytkowanie wieczyste")) {
+			output += "u.w. ";
 			shortSpace = true;
-		}
+			} else {
+				if(! owner.getOwnershipType().equals("Własność")) {
+					output += "za. ";
+					shortSpace = true;
+				}
+			}
 		
 		if(shortSpace) {
 			output += owner.toString();
