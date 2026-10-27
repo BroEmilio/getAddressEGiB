@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +18,8 @@ import javax.swing.JOptionPane;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+//import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+//import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
 
@@ -40,24 +40,33 @@ public class ProcessFile {
 		try {
 			org.jsoup.nodes.Document doc = Jsoup.parse(this.loadedFile, null);
 			org.jsoup.nodes.Element paragraphKERG = doc.select("p[align=center]").get(0);
-			org.jsoup.select.Elements tbodysOwners = doc.select("tbody:contains(Lp)");
+			org.jsoup.select.Elements tbodysOwners = doc.select("tbody:contains(Lp):contains(Podmiot ewidencyjny)");
 			org.jsoup.select.Elements tbodysNumbers = doc.select("tbody:contains(Nr działki)");
 			org.jsoup.select.Elements tbodysObreb = doc.select("tbody:contains(Nazwa obrębu)");
 			KERG = paragraphKERG.text().split(":")[1];
 			for(int i=0; i<tbodysOwners.size(); i++){
 				fieldData = new FieldData();
-				org.jsoup.select.Elements tRows = tbodysOwners.get(i).select("tr");
-				fieldData.setOwnersList(getNamesAndParticipations(tRows));
+					org.jsoup.select.Elements tRows = tbodysOwners.get(i).select("tr");
+					//System.out.println("tRows:"+tRows.toString());
+					fieldData.setOwnersList(getNamesAndParticipations(tRows));
+				
 				
 				//get FieldNumber, FieldId and KW
-				org.jsoup.nodes.Element tbody = tbodysNumbers.get(i);
-				org.jsoup.select.Elements tcolumn = tbody.select("tr").get(1).select("td");
-				ArrayList<String> fieldNameList = new ArrayList<String>(Arrays.asList(tcolumn.get(0).text().split(" ")));
-				fieldData.setFieldNumber(fieldNameList.get(0));
-				fieldData.setFieldId(fieldNameList.get(4));
-				fieldData.setKW(tcolumn.get(tcolumn.size()-1).text());
-				if(fieldData != null && fieldData.getKW()!= null)
+				if(i < tbodysNumbers.size()) {
+					org.jsoup.nodes.Element tbody = tbodysNumbers.get(i);
+					org.jsoup.select.Elements tcolumn = tbody.select("tr").get(1).select("td");
+					ArrayList<String> fieldNameList = new ArrayList<String>(Arrays.asList(tcolumn.get(0).text().split(" ")));
+					fieldData.setFieldNumber(fieldNameList.get(0));
+					fieldData.setFieldId(fieldNameList.get(4));
+					fieldData.setKW(tcolumn.get(tcolumn.size()-1).text());
+				}
+				
+				if(fieldData.getOwnersList() != null && fieldData != null && fieldData.getKW()!= null) {
 					listFieldsData.add(fieldData);
+					System.out.println(fieldData.toString());
+				}
+				
+				
 			}
 			
 			for(int i=0; i<listFieldsData.size(); i++) {
@@ -89,85 +98,101 @@ public class ProcessFile {
 	}
 	
 	ArrayList<Owner> getNamesAndParticipations(org.jsoup.select.Elements tRows){
+	  //if(tRows.get(0).select("td").get(0).toString().equals("<td>Lp</td>")) {
 		ArrayList<Owner> ownersAndSharesList = new ArrayList<Owner>();
 		Owner owner = null;
 		String ownerName = null;
+		//System.out.println("tRows[0]: "+tRows.get(0).select("td").get(0).toString());
+		
 		for(int i=1; i<tRows.size(); i++){
-			org.jsoup.select.Elements tColumns = tRows.get(i).select("td");
-			org.jsoup.nodes.Element tName = tColumns.get(1);
-			
-			owner = new Owner();
-			ownerName = "";
-			String ownershipType = tColumns.get(2).text();
-			String participation = tColumns.get(3).text();
-			String longName = tName.toString();
-			longName = longName.substring(4);
-			String[] nameList = longName.split("<br>");
-			
-			// get marriage names
-			if(nameList[0].contains("małżeństwo")) {
-				ownerName +="małż. ";
-				boolean isFirst = true;
-				for(int j=0; j<nameList.length; j++){
-					String line = nameList[j];
-					if(line.contains("Rodzice")){
-						String nameMeriage = getNameIndyvidual(line);
-						nameMeriage = nameMeriage.substring(0);
-						ownerName += nameMeriage;
-						if(isFirst){
-							ownerName += " i \r\n        ";
-							String AddressFull = nameList[2];
-							setAddress(AddressFull, owner);
-							isFirst=false;
-						}
-						else {
-							String AddressFull = nameList[j+1];
-							setAddress2(AddressFull, owner);
-						}
-					}
-				}
-				
-			}
-			
-			// get individual person name
-			if(nameList[0].contains("Rodzice")){
-				ownerName += getNameIndyvidual(nameList[0]);
-				if(nameList.length>1)
-					if(nameList[1] != null)
-						setAddress(nameList[1], owner);
-			} else
-				// get institutions names
-				if(! nameList[0].contains("małżeństwo")) {
-					String nameInstitution = "";
-					if(nameList[0].contains("</td>")) {
-						nameInstitution = nameList[0].split("</td>")[0].toString();
-					} else {
-						nameInstitution = nameList[0].split("\n")[0].toString();
-					}
-					nameInstitution = toTitleCase(nameInstitution);
-					ownerName = nameInstitution;
+				org.jsoup.select.Elements tColumns = tRows.get(i).select("td");
+				//if(tColumns.size()>3) {
+					org.jsoup.nodes.Element tName = tColumns.get(1);
+					//System.out.println("1:"+tColumns.get(1).toString()+" 2:"+tColumns.get(2).toString()+" 3:"+tColumns.get(3).toString());
+		
+					owner = new Owner();
+					ownerName = "";
+					String ownershipType = tColumns.get(2).text();
+					String participation = tColumns.get(3).text();
+					String longName = tName.toString();
+					longName = longName.substring(4);
+					String[] nameList = longName.split("<br>");
 					
-					//set institutions address
-					org.jsoup.select.Elements NameAndAdress = tName.select("td");
-					String[] splittedColumn = NameAndAdress.toString().split("<br>\n");
-					if(splittedColumn.length>1 && splittedColumn[1]!=null){
-						if(owner.getAddressStreet()==null)
-							setAddress(splittedColumn[1], owner);
-					} /*else {
-						if(splittedColumn.length>1 && splittedColumn[1]!=null){
-							setAddress2(splittedColumn[1], owner);
+					
+					// get marriage names
+					if(nameList[0].contains("małżeństwo")) {
+						ownerName +="małż. ";
+						boolean isFirst = true;
+						for(int j=0; j<nameList.length; j++){
+							String line = nameList[j];
+							//System.out.println(line);
+							if(line.contains("Rodzice")){
+								String nameMeriage = getNameIndyvidual(line);
+								nameMeriage = nameMeriage.substring(0);
+								ownerName += nameMeriage;
+								if(isFirst){
+									ownerName += " i \r\n        ";
+									String AddressFull = nameList[2];
+									setAddress(AddressFull, owner);
+									isFirst=false;
+								}
+								else {
+									if(j+1<nameList.length && nameList[j+1]!=null) {
+										String AddressFull = nameList[j+1];
+										setAddress2(AddressFull, owner);
+										isFirst=false;
+									}
+								}
+							}
 						}
-					}*/
-				}
-				
-			owner.setName(ownerName);
-			owner.setOwnershipType(ownershipType);
-			owner.setParticipation(participation);
-			ownersAndSharesList.add(owner);
-			//System.out.println(owner);
+						
+					}
+					
+					// get individual person name
+					if(nameList[0].contains("Rodzice")){
+						ownerName += getNameIndyvidual(nameList[0]);
+						if(nameList.length>1)
+							if(nameList[1] != null)
+								setAddress(nameList[1], owner);
+					} else
+						// get institutions names
+						if(! nameList[0].contains("małżeństwo")) {
+							String nameInstitution = "";
+							if(nameList[0].contains("</td>")) {
+								nameInstitution = nameList[0].split("</td>")[0].toString();
+							} else {
+								nameInstitution = nameList[0].split("\n")[0].toString();
+							}
+							nameInstitution = toTitleCase(nameInstitution);
+							ownerName = nameInstitution;
+							
+							//set institutions address
+							org.jsoup.select.Elements NameAndAdress = tName.select("td");
+							String[] splittedColumn = NameAndAdress.toString().split("<br>\n");
+							if(splittedColumn.length>1 && splittedColumn[1]!=null){
+								if(owner.getAddressStreet()==null)
+									setAddress(splittedColumn[1], owner);
+							} /*else {
+								if(splittedColumn.length>1 && splittedColumn[1]!=null){
+									setAddress2(splittedColumn[1], owner);
+								}
+							}*/
+						}
+						
+					owner.setName(ownerName);
+					owner.setOwnershipType(ownershipType);
+					owner.setParticipation(participation);
+					ownersAndSharesList.add(owner);
+					//System.out.println(owner);
+				//}
 		}
 		
+		
 		return ownersAndSharesList;
+	  /*} else {
+			System.out.println("Błąd w przetwarzaniu danych:\n"+tRows.toString());
+			return null;
+		} */
 	}
 	
 	String getNameIndyvidual (String input){
